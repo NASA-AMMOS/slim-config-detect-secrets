@@ -1,0 +1,1 @@
+# slim-config-detect-secrets
