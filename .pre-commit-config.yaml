@@ -1,58 +1,14 @@
 repos:
-- repo: local
-  hooks:
-  - id: download-detect-secrets-customized-setup-folder
-    name: Download detect-secrets customized setup folder if not exist
-    # The reason for using Python is for compatibility, as some Windows  devices may not support Bash.
-    # This part does not work well for precommit.ci due to network connection limitation,
-    # thus please make sure when using for cloud side (GitHub precommit.ci), .detect-secret folder exists
-    language: python
-    entry: |
-      python -c '
-      import os
-      import shutil
-      import subprocess
-      import sys
-      from pathlib import Path
-
-      # Repository URL for the custom detect-secrets plugins
-      REPO_URL = "https://github.com/NASA-AMMOS/slim-config-detect-secrets.git"
-
-      # Define folder paths
-      detect_secrets_folder = Path(".detect-secrets")
-      temp_repo_folder = Path("temp_repo")
-
-      # Clone the repository if the .detect-secrets folder does not exist
-      if not detect_secrets_folder.exists():
-          subprocess.run(["git", "clone", "--depth", "1", REPO_URL, str(temp_repo_folder)], check=True)
-          shutil.copytree(temp_repo_folder / ".detect-secrets", detect_secrets_folder)
-          shutil.rmtree(temp_repo_folder)
-
-      sys.exit(0)'
-    # Match no files, so the hook will run only once
-    files: ^$
-    # Ensure the hook runs even when no files are staged
-    always_run: true
-
-- repo: https://github.com/Yelp/detect-secrets
-  rev: v1.4.0
-  hooks:
-  - id: detect-secrets
-    # Specify the arguments for the detect-secrets hook
-    args:
-      - '--baseline'
-      - '.detect-secrets/.secrets.baseline'
-      - '--exclude-files'
-      - '^\.git(/.*)?$'
-      - '--exclude-files'
-      - '^\.detect-secrets(/.*)?$'
-      - '-p'
-      - .detect-secrets/plugins/absolute_filepath.py
-      - '-p'
-      - .detect-secrets/plugins/aws_sensitive_info.py
-      - '-p'
-      - .detect-secrets/plugins/email_address.py
-      - '-p'
-      - .detect-secrets/plugins/ip_address.py
-    # Specify the files that the hook should run on
-    files: .
+  - repo: https://github.com/NASA-AMMOS/slim-detect-secrets
+    # using commit id for now, will change to tag when official version is released
+    rev: 91e097ad4559ae6ab785c883dc5ed989202c7fbe
+    hooks:
+      - id: detect-secrets
+        args:
+          - '--baseline'
+          - '.secrets.baseline'
+          - '--exclude-files'
+          - '.git*'
+          - '--exclude-files'
+          - '.secrets.*' 
+          
